@@ -1,0 +1,14 @@
+{
+  "name": "bdcap-portal-backend",
+  "version": "0.1.0",
+  "private": true,
+  "main": "api/index.js",
+  "scripts": {
+    "dev": "vercel dev"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.4",
+    "cookie-parser": "^1.4.6",
+    "express": "^4.19.2"
+  }
+}

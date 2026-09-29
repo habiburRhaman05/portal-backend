@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Brown Diamond Capital – Client Portal</title>
+<style>
+:root{--bg:#FAF9F7;--fg:#1A1816;--green:#3B6B4A;--green-dark:#2D5239;--line:#E5E2DD;--muted:#8C8478}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--fg);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
+.card{max-width:400px;width:100%;background:#fff;border:1px solid var(--line);border-radius:12px;padding:40px 32px;text-align:center}
+.mark{font-size:14px;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:24px}
+h1{font-size:22px;font-weight:600;margin-bottom:8px}
+p{font-size:15px;color:var(--muted);margin-bottom:24px;line-height:1.5}
+.field{display:block;width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:8px;font-size:15px;margin-bottom:12px;font-family:inherit}
+.field:focus{outline:none;border-color:var(--green)}
+.btn{display:block;width:100%;padding:14px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit}
+.btn:hover{background:var(--green-dark)}
+.btn:disabled{opacity:0.5;cursor:not-allowed}
+.forgot{display:inline-block;margin-top:12px;font-size:13px;color:var(--green);text-decoration:none}
+.forgot:hover{text-decoration:underline}
+.error{color:#b44;font-size:13px;margin-bottom:12px;display:none}
+.support{margin-top:24px;font-size:12px;color:var(--muted)}
+.support a{color:var(--green)}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="mark">Brown Diamond Capital</div>
+  <h1>Client Portal</h1>
+  <p>Sign in to access your portal. On your first visit, enter your email and choose a password.</p>
+  <div class="error" id="error"></div>
+  <form id="loginForm">
+    <input class="field" id="email" type="email" placeholder="Email address" required autocomplete="email">
+    <input class="field" id="password" type="password" placeholder="Password" required autocomplete="current-password">
+    <button class="btn" type="submit" id="submitBtn">Sign in</button>
+  </form>
+  <a class="forgot" href="#" id="forgotLink">Forgot your password?</a>
+  <div class="support">Need help? <a href="mailto:support@browndiamondcapital.com">support@browndiamondcapital.com</a></div>
+</div>
+<script>
+var form = document.getElementById('loginForm');
+var errorEl = document.getElementById('error');
+var submitBtn = document.getElementById('submitBtn');
+
+form.addEventListener('submit', function(e) {
+  e.preventDefault();
+  errorEl.style.display = 'none';
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Signing in…';
+
+  var email = document.getElementById('email').value.trim().toLowerCase();
+  var password = document.getElementById('password').value;
+
+  fetch('/api/auth/signin', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    credentials: 'same-origin',
+    body: JSON.stringify({email: email, password: password})
+  })
+  .then(function(r) { return r.json().then(function(d) { return {ok: r.ok, data: d}; }); })
+  .then(function(result) {
+    if (result.ok) {
+      window.location.href = '/clients/portal/';
+    } else {
+      errorEl.textContent = result.data.error || 'Could not sign in';
+      errorEl.style.display = 'block';
+    }
+  })
+  .catch(function() {
+    errorEl.textContent = 'Network error. Please try again.';
+    errorEl.style.display = 'block';
+  })
+  .finally(function() {
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Sign in';
+  });
+});
+
+document.getElementById('forgotLink').addEventListener('click', function(e) {
+  e.preventDefault();
+  alert('Please contact support@browndiamondcapital.com to reset your password.');
+});
+</script>
+</body>
+</html>

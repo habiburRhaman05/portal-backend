@@ -3,12 +3,25 @@
   "version": "0.1.0",
   "private": true,
   "main": "api/index.js",
+  "engines": {
+    "node": "20.x"
+  },
   "scripts": {
-    "dev": "vercel dev"
+    "dev": "node server.js",
+    "test": "node tests/test-all.js",
+    "prepare-portal": "node scripts/prepare-portal.js",
+    "provision-fields": "node scripts/provision-fields.js",
+    "provision-fields:dry": "node scripts/provision-fields.js --dry-run",
+    "smoke-ghl": "node scripts/smoke-ghl.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.4",
     "cookie-parser": "^1.4.6",
-    "express": "^4.19.2"
+    "cors": "^2.8.6",
+    "dotenv": "^18.0.4",
+    "express": "^4.19.2",
+    "express-rate-limit": "^8.7.0",
+    "helmet": "^8.3.0",
+    "uuid": "^14.0.2"
   }
 }

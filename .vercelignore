@@ -1,0 +1,7 @@
+docs/handoff/
+docs/*.md
+tests/
+sites/
+specs/
+*.md
+.env.example

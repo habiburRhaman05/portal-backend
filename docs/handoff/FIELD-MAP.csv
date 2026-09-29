@@ -1,0 +1,39 @@
+portal_page,portal_label,element_id_or_key,ghl_folder,ghl_field,ghl_type,existing_or_new
+information,Legal first name,legalFirstName,BDCap Portal – Your Information,Legal First Name,Text,NEW (does not overwrite Contact › First Name)
+information,Legal last name,legalLastName,BDCap Portal – Your Information,Legal Last Name,Text,NEW (does not overwrite Contact › Last Name)
+information,Date of birth,dateOfBirth,General Info,Date of Birth,Date,existing
+information,Personal email address,personalEmail,Contact,Email,Email,existing
+information,Personal phone number,personalPhone,Contact,Phone,Phone,existing
+information,Current mailing address – street,mailingStreet,General Info,Address – Street,Text,existing
+information,Current mailing address – city,mailingCity,General Info,Address – City,Text,existing
+information,Current mailing address – state,mailingState,General Info,Address – State,Text,existing
+information,Current mailing address – ZIP,mailingZip,General Info,Address – Postal Code,Text,existing (Country = US)
+information,Preferred contact method,preferredContact,Contact,Preferred Contact Method,Dropdown (same options),existing
+information,Preferred contact time,contactTimeMorning / contactTimeEvening / contactTimeNight,Contact,Preferred Contact Time,"Multi-select: Morning, Evening, Night",existing
+information,Team row 1 – Name,team_name_1,Contact,Secondary Contact Name,Text,existing
+information,Team row 1 – Role (or specified relationship),team_role_1 / team_relationship_1,Contact,Secondary Contact Title/Relation,Text,existing
+information,Team row 1 – Phone,team_phone_1,Contact,Secondary Contact Phone,Phone,existing
+information,Team row 1 – Email,team_email_1,Contact,Secondary Contact Email,Email,existing
+information,Team rows 2–5,team_*_2 … team_*_5,BDCap Portal – Your Information,Additional Contacts,Large Text (JSON),NEW
+information,Desired business name,bizNameInput,BDCap Portal – Your Information,Business Name,Text,NEW
+information,Backup name 1,backupName1,BDCap Portal – Your Information,Business Name Backup 1,Text,NEW
+information,Backup name 2,backupName2,BDCap Portal – Your Information,Business Name Backup 2,Text,NEW
+information,Business theme,themeSelect,BDCap Portal – Your Information,Business Theme,Dropdown: the 6 themes (not the Industry field),NEW
+information,Business purpose description,purposeText,BDCap Portal – Your Information,Business Purpose,Large Text,NEW
+information,NAICS code,naicsField,BDCap Portal – Your Information,NAICS Code,Text,NEW
+information,SIC code,sicField,BDCap Portal – Your Information,SIC Code,Text,NEW
+website,Suggested domain names (chosen),domainInput,BDCap Portal – Your Website,Domain Choice,Text,NEW
+website,Tagline,taglineInput,BDCap Portal – Your Website,Site Tagline,Text,NEW
+website,Contact button wording,ctaSel,BDCap Portal – Your Website,Contact Button Wording,Text,NEW
+website,"Plan, template, fonts, palette, variant, page labels, hero per page",sel (JSON),BDCap Portal – Your Website,Site Config,Large Text (JSON),NEW
+website,Potential business name (mirror),bizNameMirror,—,mirror of Business Name,—,not stored
+website,Site theme (mirror),siteThemeSelect,—,mirror of Business Theme,—,not stored
+—,"set by workflow, not the client",—,BDCap Portal – Status,Portal Completed On,Date/Time,NEW
+—,"set by a CSM by hand only, when reopening the portal after a change request: now + 24 hours, with Locked On cleared",—,BDCap Portal – Status,Changes Allowed Until,Date,NEW
+—,"set on Confirm submission (same instant as Portal Completed On); also by the scheduled workflow when a reopened window passes",—,BDCap Portal – Status,Locked On,Date,NEW
+—,set by workflow on completion,—,Sales Activities,Contact Type = Client,existing dropdown,existing
+—,"typed by a Capital Success Manager by hand before the portal invitation; no workflow reads or writes it",—,BDCap Portal – Status,Client Number,"Text (initials + 4-digit sequence, e.g. BE0001)",NEW
+—,"set by the generator host after staging (§7)",—,BDCap Portal – Your Website,Site Preview URL,Text,NEW
+—,"set by the generator host on publish (§7)",—,BDCap Portal – Status,Site Deployed On,Date,NEW
+—,"set by the generator host on publish (§7)",—,BDCap Portal – Status,Site URL,Text,NEW
+signin,Email address / Password,—,—,"handled by the developer's client portal sign-in (guide §2); the client sets and resets their own password",—,not stored

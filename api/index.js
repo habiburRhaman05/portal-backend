@@ -26,10 +26,20 @@ const allowedOrigins = [config.PORTAL_ORIGIN, config.SITE_ORIGIN].filter(Boolean
 if (config.NODE_ENV !== 'production') {
   allowedOrigins.push('http://localhost:3000', 'http://127.0.0.1:3000');
 }
+
+console.log('[CORS] Allowed origins:', allowedOrigins);
+
 app.use(cors({
   origin(origin, cb) {
-    if (!origin || allowedOrigins.includes(origin)) cb(null, true);
-    else cb(new Error('CORS'));
+    const isAllowed =
+      !origin ||
+      allowedOrigins.includes(origin) ||
+      /^https:\/\/.*\.vercel\.app$/.test(origin);
+
+    if (isAllowed) return cb(null, true);
+    
+    console.log('[CORS blocked]', { origin, allowedOrigins });
+    return cb(new Error('CORS'));
   },
   credentials: true,
 }));
@@ -42,7 +52,7 @@ const authLimiter = rateLimit({
   message: { error: 'Too many attempts, try again later' },
 });
 
-// ─── Auth ────────────────────────────────────────────────────────────────
+// ─── Auth ───────────────────────────────────────────────────────────────[...]
 // Stateless: the Supabase access token itself (a signed JWT Supabase issues
 // and verifies) is held in an httpOnly cookie. There is no server-side
 // session store, so this works identically on a long-running server and on

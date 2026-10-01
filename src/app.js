@@ -19,7 +19,9 @@ function createApp(deps) {
   app.use(express.json({ limit: '256kb' }));
   app.use(cookieParser());
 
-  const allowedOrigins = [config.PORTAL_ORIGIN, config.SITE_ORIGIN, config.FRONTEND_URL].filter(Boolean);
+  const extraOrigins = String(config.CORS_ORIGINS || '').split(',').map(s => s.trim().replace(/\/$/, '')).filter(Boolean);
+  const allowedOrigins = [config.PORTAL_ORIGIN, config.SITE_ORIGIN, config.FRONTEND_URL, ...extraOrigins]
+    .filter(Boolean).map(o => o.replace(/\/$/, ''));
   if (config.NODE_ENV !== 'production') {
     allowedOrigins.push('http://localhost:3000', 'http://127.0.0.1:3000', 'http://localhost:5173', 'http://127.0.0.1:5173');
   }

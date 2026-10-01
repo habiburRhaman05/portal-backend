@@ -43,13 +43,19 @@ const FOLDERS = {
   ],
 };
 
-const EXISTING_FIELDS = [
+// The spec treats these as "existing" fields in BDCap's account. They are created
+// only when missing (matched by name), so this is safe on both kinds of account.
+FOLDERS['Contact (spec "existing" fields, created if missing)'] = [
   { name: 'Preferred Contact Method', dataType: 'SINGLE_OPTIONS', options: [
     'Email', 'Phone', 'SMS/Text', 'In Person', 'Social Media', 'Zoom',
   ]},
   { name: 'Preferred Contact Time', dataType: 'MULTIPLE_OPTIONS', options: [
     'Morning', 'Evening', 'Night',
   ]},
+  { name: 'Secondary Contact Name', dataType: 'TEXT' },
+  { name: 'Secondary Contact Title/Relation', dataType: 'TEXT' },
+  { name: 'Secondary Contact Phone', dataType: 'TEXT' },
+  { name: 'Secondary Contact Email', dataType: 'TEXT' },
 ];
 
 async function main() {
@@ -115,17 +121,6 @@ async function main() {
         console.log(`    [ERROR] ${field.name}: ${e.message}`);
         fieldIdMap[field.name] = `error_${field.name.toLowerCase().replace(/[^a-z0-9]+/g, '_')}`;
       }
-    }
-  }
-
-  console.log('\n  Existing fields (verify options match):');
-  for (const field of EXISTING_FIELDS) {
-    if (existingByName[field.name]) {
-      fieldIdMap[field.name] = existingByName[field.name].id;
-      console.log(`    [EXISTS] ${field.name} → ${existingByName[field.name].id}`);
-    } else {
-      fieldIdMap[field.name] = `placeholder_${field.name.toLowerCase().replace(/[^a-z0-9]+/g, '_')}`;
-      console.log(`    [NOT FOUND] ${field.name} — verify it exists with correct options: ${field.options.join(', ')}`);
     }
   }
 

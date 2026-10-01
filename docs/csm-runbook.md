@@ -1,80 +1,43 @@
-# Capital Success Manager Runbook
+# Capital Success Manager runbook
 
-## What the client portal does
+You now do most of this in the **admin dashboard**, not in GHL.
 
-The client portal lets your clients fill in their personal and business details, choose a website design (template, fonts, colors, theme, hero images), and submit everything in one place. When they click **Confirm submission**, the portal locks and the site generation process begins.
+## Inviting a client
 
----
+1. Admin dashboard -> **Invites** -> enter the client's email -> **Send invite**.
+2. They get an email with a link. They choose their own password; nobody at Brown Diamond sees it.
+3. When they sign in, their account and GHL contact are linked automatically (an existing GHL contact with the same email is reused, never duplicated).
 
-## Reopening a portal after a change request
+A waiting invite can be **Revoked**. Type the email the client will actually use: it becomes their login.
 
-When a client sends a change request from the locked portal, you'll receive an email and a Task in GHL. To let the client make changes:
+## Watching progress
 
-1. Open the contact in GHL
-2. Go to **BDCap Portal – Status**
-3. Set **Changes Allowed Until** to **tomorrow's date** (24 hours from now)
-4. **Clear** the **Locked On** field (delete the value, leave it empty)
-5. Save the contact
+**Clients** lists everyone with their status: Not started, In progress, Submitted, Reopened. Open a client to see
+everything they filled in, the website design they chose (template, fonts, palette, page names, hero images), their change
+requests and an activity log. **View portal as client** shows their real portal with the live site preview, read only.
 
-The client will now see a banner: **"Your portal is open until [date]"**. They can edit and submit again. After they confirm, or when the date passes, the portal locks itself again.
+## When a client sends a change request
 
-**Important:** Never set Changes Allowed Until without clearing Locked On. Both must happen together.
+The portal is locked after the client submits. A request appears under **Change requests** (and in GHL as a Note, a Task and an email to you).
 
----
+- **Approve**: the client's portal reopens for 24 hours. They edit it and confirm again, which locks it again. They see "approved" and your note.
+- **Reject**: the portal stays locked. They see "rejected" and your note, so write one.
 
-## Client Number
+You can also **Reopen portal** yourself from the client page (24 hours to 7 days), **Lock now** to end a window early, or **Edit details** to change a client's answers or design yourself without reopening anything.
 
-Client Number is typed by you (the CSM) by hand before inviting the client to the portal. Format: initials + 4-digit sequence (e.g., BE0001).
+## What clients can never change
 
-No workflow reads or writes this field. It exists only for your reference.
-
----
-
-## What happens on submission
-
-When a client confirms submission:
-1. **Portal Completed On** and **Locked On** are set to the same instant
-2. A Note is added to the contact
-3. The portal becomes read-only
-4. The "Request a change" button appears
-
----
-
-## Change requests
-
-When a client sends a change request:
-1. A **Note** is added to their contact with the request details
-2. A **Task** is created and assigned to you
-3. You receive an **email** notification
-4. **No fields are changed** and the portal stays locked
-
-To act on the request, follow the "Reopening a portal" steps above.
-
----
+Lock dates, Client Number, and the site fields. Client Number is typed by you in GHL before the client is invited; nothing reads or writes it.
 
 ## Documents
 
-Client documents are handled entirely in **SharePoint**, not in GHL:
-- Create the client's folder in SharePoint by hand
-- Share it with the client by email
-- The portal's "Your Documents" panel is a static reference list — there's nothing to connect
-
----
+Handled in SharePoint, outside GHL: create the client's folder, share it with them by email. Nothing is connected.
 
 ## After the site is generated
 
-When a client's portal is locked, the system generates a 3-page website:
-1. The **Site Preview URL** field on the contact will show the staging link
-2. Review the staging site and the build report
-3. File the build report in SharePoint if needed
-4. When ready, follow the publish runbook to put the site live
-5. After publishing, **Site Deployed On** and **Site URL** are set on the contact
-
----
+When a portal is locked, the generator builds the three-page site and writes the **Site Preview URL** onto the contact (the client sees it on their dashboard).
+Review the build report, then follow `publish-runbook.md`. After publishing, **Site Deployed On** and **Site URL** appear on the client's dashboard too.
 
 ## When the phone number arrives
 
-When a phone number is issued for the client later:
-1. Update the contact's **Phone** field in GHL
-2. The site will need to be regenerated to include the phone number
-3. Contact the developer to re-run the generator for this contact
+Update the contact's Phone in GHL and ask the developer to regenerate the site.

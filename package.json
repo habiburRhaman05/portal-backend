@@ -8,7 +8,10 @@
   },
   "scripts": {
     "dev": "node server.js",
-    "test": "node tests/test-all.js",
+    "test": "node tests/test-all.js && node tests/test-routes.js",
+    "test:browser": "node tests/portal-browser.js",
+    "test:all": "npm test && npm run test:browser",
+    "make-admin": "node scripts/make-admin.js",
     "prepare-portal": "node scripts/prepare-portal.js",
     "provision-fields": "node scripts/provision-fields.js",
     "provision-fields:dry": "node scripts/provision-fields.js --dry-run",
@@ -23,5 +26,8 @@
     "express-rate-limit": "^8.7.0",
     "helmet": "^8.3.0",
     "uuid": "^14.0.2"
+  },
+  "devDependencies": {
+    "playwright-core": "^1.63.0"
   }
 }

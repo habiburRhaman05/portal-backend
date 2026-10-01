@@ -97,9 +97,20 @@ function extractTeamRows2to5(fields) {
   return rows;
 }
 
+// GHL silently drops writes to unknown custom-field ids, so a field that was
+// never provisioned (placeholder id) must not be sent at all.
+function realId(name) {
+  const id = fieldIds[name];
+  return id && !String(id).startsWith('placeholder_') && !String(id).startsWith('error_') ? id : null;
+}
+
 function portalPayloadToGhl(payload) {
   const { fields = {}, sel = {} } = payload;
   const ghl = { customFields: [], contact: {} };
+  const setCf = (name, value) => {
+    const id = realId(name);
+    if (id) ghl.customFields.push({ id, value });
+  };
 
   for (const [portalKey, mapping] of Object.entries(FIELD_MAP)) {
     const value = fields[portalKey];
@@ -113,46 +124,50 @@ function portalPayloadToGhl(payload) {
       else if (mapping.ghlField === 'state') ghl.contact.state = value;
       else if (mapping.ghlField === 'postalCode') { ghl.contact.postalCode = value; ghl.contact.country = 'US'; }
       else if (mapping.ghlField === 'date_of_birth') ghl.contact.dateOfBirth = value;
-      else if (mapping.ghlField === 'Preferred Contact Method') {
-        const id = fieldIds['Preferred Contact Method'];
-        if (id) ghl.customFields.push({ id, value });
-      }
+      else setCf(mapping.ghlField, value);
     } else {
-      const id = fieldIds[mapping.ghlField];
-      if (id) ghl.customFields.push({ id, value });
+      setCf(mapping.ghlField, value);
     }
   }
 
-  const contactTimes = buildContactTimeMultiSelect(fields);
-  if (contactTimes.length) {
-    const id = fieldIds['Preferred Contact Time'];
-    if (id) ghl.customFields.push({ id, value: contactTimes });
+  // Always overwritten, including when the client unticks every time slot.
+  if (['contactTimeMorning', 'contactTimeEvening', 'contactTimeNight'].some(k => k in fields)) {
+    setCf('Preferred Contact Time', buildContactTimeMultiSelect(fields));
   }
 
-  for (const [portalKey, mapping] of Object.entries(TEAM_ROW_1_MAP)) {
-    if (mapping.mergeWith) continue;
-    const value = fields[portalKey];
-    if (value === undefined) continue;
-    if (mapping.ghlField === 'Secondary Contact Name')           ghl.contact.secondaryContactName = value;
-    else if (mapping.ghlField === 'Secondary Contact Title/Relation') {
-      ghl.contact.secondaryContactTitle = fields.team_role_1 || fields.team_relationship_1 || '';
-    }
-    else if (mapping.ghlField === 'Secondary Contact Phone')     ghl.contact.secondaryContactPhone = value;
-    else if (mapping.ghlField === 'Secondary Contact Email')     ghl.contact.secondaryContactEmail = value;
+  // Team row 1 is the Secondary Contact (custom fields; GHL rejects unknown top-level props).
+  if ('team_name_1' in fields) setCf('Secondary Contact Name', fields.team_name_1);
+  if ('team_role_1' in fields || 'team_relationship_1' in fields) {
+    setCf('Secondary Contact Title/Relation', fields.team_role_1 || fields.team_relationship_1 || '');
   }
+  if ('team_phone_1' in fields) setCf('Secondary Contact Phone', fields.team_phone_1);
+  if ('team_email_1' in fields) setCf('Secondary Contact Email', fields.team_email_1);
 
   const additionalContacts = extractTeamRows2to5(fields);
   if (additionalContacts.length) {
-    const id = fieldIds['Additional Contacts'];
-    if (id) ghl.customFields.push({ id, value: JSON.stringify(additionalContacts) });
+    setCf('Additional Contacts', JSON.stringify(additionalContacts));
   }
 
   if (sel && Object.keys(sel).length) {
-    const id = fieldIds['Site Config'];
-    if (id) ghl.customFields.push({ id, value: JSON.stringify(sel) });
+    setCf('Site Config', JSON.stringify(sel));
   }
 
   return ghl;
+}
+
+// GHL DATE fields keep only the calendar date. The full instant lives in the
+// Site Config JSON, so prefer it when it is the same day as the GHL value.
+function toDateString(v) {
+  if (v === undefined || v === null || v === '') return '';
+  if (typeof v === 'number') return new Date(v).toISOString().slice(0, 10);
+  return String(v);
+}
+
+function exactInstant(ghlValue, selValue) {
+  const d = toDateString(ghlValue);
+  if (!d) return '';
+  if (selValue && String(selValue).slice(0, 10) === d.slice(0, 10)) return String(selValue);
+  return d;
 }
 
 function ghlToPortalPrefill(contact) {
@@ -181,10 +196,10 @@ function ghlToPortalPrefill(contact) {
   fields.mailingZip     = contact.postalCode || '';
   fields.dateOfBirth    = contact.dateOfBirth || '';
 
-  fields.team_name_1  = contact.secondaryContactName || '';
-  fields.team_role_1  = contact.secondaryContactTitle || '';
-  fields.team_phone_1 = contact.secondaryContactPhone || '';
-  fields.team_email_1 = contact.secondaryContactEmail || '';
+  fields.team_name_1  = '';
+  fields.team_role_1  = '';
+  fields.team_phone_1 = '';
+  fields.team_email_1 = '';
 
   const nameToPortalKey = {};
   for (const [portalKey, mapping] of Object.entries(FIELD_MAP)) {
@@ -197,6 +212,14 @@ function ghlToPortalPrefill(contact) {
 
     if (fieldName === 'Preferred Contact Method') {
       fields.preferredContact = cfValue;
+    } else if (fieldName === 'Secondary Contact Name') {
+      fields.team_name_1 = cfValue || '';
+    } else if (fieldName === 'Secondary Contact Title/Relation') {
+      fields.team_role_1 = cfValue || '';
+    } else if (fieldName === 'Secondary Contact Phone') {
+      fields.team_phone_1 = cfValue || '';
+    } else if (fieldName === 'Secondary Contact Email') {
+      fields.team_email_1 = cfValue || '';
     } else if (fieldName === 'Preferred Contact Time') {
       const times = Array.isArray(cfValue) ? cfValue : (cfValue || '').split(',').map(s => s.trim());
       fields.contactTimeMorning = times.includes('Morning');
@@ -229,18 +252,31 @@ function ghlToPortalPrefill(contact) {
     try { sel = JSON.parse(customFieldMap[siteConfigId]); } catch (_) {}
   }
 
-  let status = {};
-  const completedOnId = fieldIds['Portal Completed On'];
-  const changesUntilId = fieldIds['Changes Allowed Until'];
-  const lockedOnId = fieldIds['Locked On'];
-  if (completedOnId) status.completedOn = customFieldMap[completedOnId] || '';
-  if (changesUntilId) status.changesUntil = customFieldMap[changesUntilId] || '';
-  if (lockedOnId) status.lockedOn = customFieldMap[lockedOnId] || '';
+  const status = {
+    completedOn: exactInstant(customFieldMap[fieldIds['Portal Completed On']], sel.completedOn),
+    changesUntil: exactInstant(customFieldMap[fieldIds['Changes Allowed Until']], sel.changesUntil),
+    lockedOn: exactInstant(customFieldMap[fieldIds['Locked On']], sel.lockedOn),
+  };
 
-  return { fields, sel, status };
+  // The GHL status fields are authoritative; keep the Site Config copy in step
+  // so the portal page (which also reads sel.*) never disagrees with them.
+  sel.completedOn = status.completedOn;
+  sel.changesUntil = status.changesUntil;
+  sel.lockedOn = status.lockedOn;
+
+  const site = {
+    previewUrl: customFieldMap[fieldIds['Site Preview URL']] || '',
+    deployedOn: toDateString(customFieldMap[fieldIds['Site Deployed On']]),
+    url: customFieldMap[fieldIds['Site URL']] || '',
+    clientNumber: customFieldMap[fieldIds['Client Number']] || '',
+  };
+
+  return { fields, sel, status, site };
 }
 
 module.exports = {
+  fieldIds,
+  realId,
   FIELD_MAP,
   TEAM_ROW_1_MAP,
   THEMES,

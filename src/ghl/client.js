@@ -99,6 +99,10 @@ function createGhlClient(config) {
       return request('PUT', `/contacts/${contactId}`, data);
     },
 
+    createContact(data) {
+      return request('POST', '/contacts/', { locationId, ...data });
+    },
+
     searchContacts(query) {
       return request('POST', `/contacts/search`, {
         locationId,

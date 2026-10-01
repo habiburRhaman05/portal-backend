@@ -118,9 +118,46 @@ test('portalPayloadToGhl maps team row 1 to secondary contact', () => {
     sel: {},
   };
   const ghl = portalPayloadToGhl(payload);
-  assert.strictEqual(ghl.contact.secondaryContactName, 'Jane');
-  assert.strictEqual(ghl.contact.secondaryContactPhone, '555-1111');
-  assert.strictEqual(ghl.contact.secondaryContactEmail, 'jane@test.com');
+  const cf = (name) => ghl.customFields.find(f => f.id === fieldIds[name])?.value;
+  assert.strictEqual(cf('Secondary Contact Name'), 'Jane');
+  assert.strictEqual(cf('Secondary Contact Title/Relation'), 'CFO');
+  assert.strictEqual(cf('Secondary Contact Phone'), '555-1111');
+  assert.strictEqual(cf('Secondary Contact Email'), 'jane@test.com');
+  // GHL rejects unknown top-level contact props with a 422
+  assert.strictEqual(ghl.contact.secondaryContactName, undefined);
+});
+
+test('portalPayloadToGhl never sends unprovisioned (placeholder) field ids', () => {
+  const ghl = portalPayloadToGhl({ fields: { bizNameInput: 'X', preferredContact: 'Email' }, sel: { tpl: 'split' } });
+  for (const f of ghl.customFields) {
+    assert.ok(!String(f.id).startsWith('placeholder_'), 'placeholder id leaked: ' + f.id);
+  }
+});
+
+test('contact time is overwritten even when every slot is unticked', () => {
+  const ghl = portalPayloadToGhl({ fields: { contactTimeMorning: false, contactTimeEvening: false, contactTimeNight: false }, sel: {} });
+  const f = ghl.customFields.find(x => x.id === fieldIds['Preferred Contact Time']);
+  assert.ok(f, 'Preferred Contact Time should be written');
+  assert.deepStrictEqual(f.value, []);
+});
+
+test('prefill reads the exact instant from Site Config when GHL only has the date', () => {
+  const contact = { customFields: [
+    { id: fieldIds['Locked On'], value: '2026-10-01' },
+    { id: fieldIds['Site Config'], value: JSON.stringify({ tpl: 'split', lockedOn: '2026-10-01T03:50:23.928Z' }) },
+  ] };
+  const p = ghlToPortalPrefill(contact);
+  assert.strictEqual(p.status.lockedOn, '2026-10-01T03:50:23.928Z');
+  assert.strictEqual(p.sel.lockedOn, p.status.lockedOn);
+});
+
+test('prefill: cleared GHL status wins over a stale Site Config copy', () => {
+  const contact = { customFields: [
+    { id: fieldIds['Site Config'], value: JSON.stringify({ lockedOn: '2026-10-01T03:50:23.928Z' }) },
+  ] };
+  const p = ghlToPortalPrefill(contact);
+  assert.strictEqual(p.status.lockedOn, '');
+  assert.strictEqual(p.sel.lockedOn, '');
 });
 
 test('portalPayloadToGhl maps team rows 2-5 as JSON', () => {
